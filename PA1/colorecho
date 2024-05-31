@@ -1,0 +1,54 @@
+#!/usr/bin/tcsh
+source colors
+
+#Now comes the parts that you need to fix:
+foreach index ( `seq $#argv` )
+    set args = $argv[$index]
+    if ( "$args" == '-' ) then
+        echo -n - >> echoline
+
+    else if ( "$args" == '-n' ) then
+        ( echo -n -;echo n ) >> echoline
+
+    else if ( "$args" !~ [-][roygbpcmwy] && "$args" !~ [-][-]* ) then 
+        echo "$args" >> echoline
+
+    else
+        set newarg = `echo "$args" | tr -d '-'`
+        if ( "$newarg" =~ [lbd][brycgmopw]* && "$newarg" !~ [b][r][o]* && "$newarg" !~ [b][r][i]* ) then
+	    if ( $newarg =~ [l]* ) set adj = "light"
+	    if ( $newarg =~ [b]* ) set adj = "bright"
+	    if ( $newarg =~ [d]* ) set adj = "dark"
+            set letter = ( `echo $newarg | grep -o .`)
+            set newarg = `echo "$adj$letter[2-]" | tr -d ' ' `
+        endif
+
+        if ( $newarg =~ *[r] ) set newarg = `echo "$newarg"ed`
+        if ( $newarg =~ *[b] ) set newarg = `echo $newarg"lue"`
+        if ( $newarg =~ *[y] && $newarg !~ *[ae][y] ) set newarg = `echo $newarg"ellow"`
+        if ( $newarg =~ *[g] ) set newarg = `echo $newarg"reen"`
+        if ( $newarg =~ *[o] ) set newarg = `echo $newarg"range"`
+        if ( $newarg =~ *[p] ) set newarg = `echo $newarg"urple"`
+        if ( $newarg =~ *[c] ) set newarg = `echo $newarg"yan"`
+        if ( $newarg =~ *[m] ) set newarg = `echo $newarg"agenta"`
+        if ( $newarg =~ *[w] && $newarg !~ *[o][w] ) set newarg = `echo $newarg'hite'`
+
+        #The following section addresses a few synonyms:
+        if ( $newarg == 'lightwhite' ) set newarg = 'white'
+        
+        if ( $newarg =~ *[e][y] ) set newarg = `echo "$newarg" | tr 'e' 'a'`
+                           
+        if ( $newarg =~ *magenta ) set newarg = `echo "$newarg" | cut -d "m" -f1`"purple"
+                            
+        echo -n \"\$"$newarg"\" >> echoline
+        continue
+    endif
+
+    if ( $index == 1 ) echo -n " " >> echoline
+end
+
+#The following lines are the same as colorechousingswitch (and are explained there):
+source echoline
+cat echoline | cut -d\  --complement -f1    >> colorechoout; rm -f echoline
+echo -n "$reset"
+
